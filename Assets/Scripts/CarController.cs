@@ -3,9 +3,13 @@ using UnityEngine;
 public class CarController : MonoBehaviour
 {
     [Header("ตั้งค่ารถ")]
-    public float motorForce = 1500f;    // แรงขับเคลื่อน
-    public float breakForce = 3000f;    // แรงเบรก
-    public float maxSteerAngle = 30f;   // มุมเลี้ยวสูงสุด
+    public float motorForce = 1500f;
+    public float breakForce = 3000f;
+    public float maxSteerAngle = 30f;
+
+    [Header("ระบบกู้รถ (Flip/Reset)")]
+    public KeyCode resetKey = KeyCode.R; // กด R เพื่อพลิกกลับ
+    public float resetHeight = 2f;      // ระยะยกตัวขึ้นจากพื้นเล็กน้อยตอนรีเซ็ต
 
     [Header("อ้างอิงวัตถุ (Wheel Colliders)")]
     public WheelCollider frontLeftWheel;
@@ -16,12 +20,27 @@ public class CarController : MonoBehaviour
     private float horizontalInput;
     private float verticalInput;
     private bool isBreaking;
+    private Rigidbody rb; // เก็บค่า Rigidbody ไว้จัดการเรื่องน้ำหนัก
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        rb.centerOfMass = new Vector3(0, -0.9f, 0);
+    }
+
+    void Update() // เช็ค Input ปุ่ม Reset ใน Update จะแม่นยำกว่า FixedUpdate
+    {
+        if (Input.GetKeyDown(resetKey))
+        {
+            FlipCar();
+        }
+    }
 
     void FixedUpdate()
     {
-        GetInput();      // 1. รับค่าจากคีย์บอร์ด
-        HandleMotor();   // 2. สั่งให้ล้อหมุน (วิ่ง)
-        HandleSteering(); // 3. สั่งให้ล้อเลี้ยว
+        GetInput();
+        HandleMotor();
+        HandleSteering();
     }
 
     private void GetInput()
@@ -33,11 +52,9 @@ public class CarController : MonoBehaviour
 
     private void HandleMotor()
     {
-        // ส่งแรงไปที่ล้อคู่หน้า (ขับเคลื่อนล้อหน้า)
         frontLeftWheel.motorTorque = verticalInput * motorForce;
         frontRightWheel.motorTorque = verticalInput * motorForce;
 
-        // ระบบเบรก
         float currentbreakForce = isBreaking ? breakForce : 0f;
         ApplyBreaking(currentbreakForce);
     }
@@ -52,9 +69,25 @@ public class CarController : MonoBehaviour
 
     private void HandleSteering()
     {
-        // เลี้ยวล้อคู่หน้า
         float currentSteerAngle = maxSteerAngle * horizontalInput;
         frontLeftWheel.steerAngle = currentSteerAngle;
         frontRightWheel.steerAngle = currentSteerAngle;
+    }
+
+    // ฟังก์ชันพลิกรถ
+    private void FlipCar()
+    {
+        // 1. ทำให้รถตั้งตรง (Reset Rotation)
+        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+
+        // 2. ยกตัวรถขึ้นเล็กน้อยเพื่อไม่ให้ล้อจมดิน
+        transform.position += Vector3.up * resetHeight;
+
+        // 3. ล้างค่าแรงเฉื่อยเดิมทิ้ง (Velocity) เพื่อไม่ให้รถพุ่งต่อตอนพลิก
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
     }
 }
