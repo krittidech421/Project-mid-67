@@ -14,5 +14,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Stage2.unity
     guid: e8231ea19afd0c74aacdc6f96213cc43
+  - enabled: 1
+    path: Assets/Scenes/End Credit.unity
+    guid: 157b7c23a23dfb8438f7aad34c5bce88
+  - enabled: 1
+    path: Assets/Scenes/Scene End Credit.unity
+    guid: bc9da05c04ad4a447a17e9479833e10d
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 289c1b55c9541489481df5cc06664110, type: 3}
